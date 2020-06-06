@@ -16,9 +16,6 @@
 package com.sergej.game;
 
 import android.opengl.GLES20;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -47,21 +44,18 @@ public class CylinderElement {
 					"}";
 
 	// number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
+    static final int COORDS_PER_VERTEX = 3, MAX_SLICES = 8;
     private final int _shaderProgram;
 
-	private final int _vertices = 8 * 2;
-
-	private final float [] tubeCoords = new float[_vertices * COORDS_PER_VERTEX];
-	private final short [] drawOrder = {
-		 0,  1,  3,  0,  3,  2,  2,  3,  5,  2,  5,  4,
-		 4,  5,  7,  4,  7,  6,  6,  7,  9,  6,  9,  8, // !!! + 4 for each element
-	 	 8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //		from previous row
+	protected final short [] _drawOrder = {
+		0,  1,  3,  0,  3,  2,  2,  3,  5,  2,  5,  4 ,
+		4,  5,  7,  4,  7,  6,  6,  7,  9,  6,  9,  8, // !!! + 4 for each element
+	 	8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //		from previous row
 	 	12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
-	 	}; //new short[_indices]; ; //;{ 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+	 	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
-	private final FloatBuffer _vertexBuffer;
-	private final ShortBuffer _drawListBuffer;
+	protected FloatBuffer _vertexBuffer;
+	protected ShortBuffer _drawListBuffer;
 
 	public CylinderElement() {
 		// create empty OpenGL Program
@@ -76,14 +70,9 @@ public class CylinderElement {
 
 		// create OpenGL shader program executables
 		GLES20.glLinkProgram(_shaderProgram);
-
-		// initialize buffers for vertices and indices, which in shaders and
-		// in draw method are used
-		_vertexBuffer = ByteBuffer.allocateDirect(_vertices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-		_drawListBuffer = ByteBuffer.allocateDirect(drawOrder.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
 		}
 
-	private float color [] = { 1.0f, 0f, 0f, 1.0f };
+	private float [] color = { 1.0f, 0f, 0f, 1.0f };
 
 	/**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
@@ -121,9 +110,11 @@ public class CylinderElement {
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _drawOrder.length, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(position_handle);
     	}
-	}
+
+    protected final float DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
+    }
