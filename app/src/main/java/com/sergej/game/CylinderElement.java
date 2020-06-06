@@ -48,10 +48,10 @@ public class CylinderElement {
     private final int _shaderProgram;
 
 	protected final short [] _drawOrder = {
-		0,  1,  3,  0,  3,  2,  2,  3,  5,  2,  5,  4 ,
-		4,  5,  7,  4,  7,  6,  6,  7,  9,  6,  9,  8, // !!! + 4 for each element
-	 	8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //		from previous row
-	 	12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
+		0,  1,  3,  0,  3,  2,  2,  3,  5,  2,  5,  4 //,
+		//4,  5,  7,  4,  7,  6,  6,  7,  9,  6,  9,  8, // !!! + 4 for each element
+	 	//8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //		from previous row
+	 	//12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
 	 	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 	protected FloatBuffer _vertexBuffer;
