@@ -1,7 +1,7 @@
 package com.sergej.game;
 
 public class Cylinder {
-	private Tube _tube = new Tube(0f, 2 * (float) Math.PI, 0.8f, 0f);
+	private Tube _tube = new Tube(0f, 2 * (float) Math.PI, 0.8f, 0.5f);
 	float [] color1 = {1.0f, 1.0f, 1.0f, 1.0f};
 	float [] color2 = {0.0f, 1.0f, 0.0f, 0.0f};//ne60fw float
 	//private Circle _topcircle = new Circle(color1, 1); 
