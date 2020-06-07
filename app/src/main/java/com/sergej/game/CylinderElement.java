@@ -16,8 +16,12 @@
 package com.sergej.game;
 
 import android.opengl.GLES20;
+
+import androidx.core.content.res.TypedArrayUtils;
+
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 /**
  * A three-dimensional basis for cylinder elements for use as a drawn cylinder elements
@@ -46,13 +50,6 @@ public class CylinderElement {
 	// number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3, MAX_SLICES = 8;
     private final int _shaderProgram;
-
-	protected final short [] _drawOrder = {
-		0,  1,  3,  0,  3,  2,  2,  3,  5,  2,  5,  4 //,
-		//4,  5,  7,  4,  7,  6,  6,  7,  9,  6,  9,  8, // !!! + 4 for each element
-	 	//8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //		from previous row
-	 	//12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
-	 	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 	protected FloatBuffer _vertexBuffer;
 	protected ShortBuffer _drawListBuffer;
@@ -117,4 +114,25 @@ public class CylinderElement {
     	}
 
     protected final float DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
+
+	protected final short [] _drawOrderPattern = {
+			0,  1,  3,  0,  3,  2 //,
+			//2,  3,  5,  2,  5,  4 //, !!! +2 for each element from previous row
+			//4,  5,  7,  4,  7,  6, 6,  7,  9,  6,  9,  8,  // !!! + 4 for each element
+			//8,  9, 11,  8, 11, 10, 10, 11, 13, 10, 13, 12, //	from previous row
+			//12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
+	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+
+	private short[] recalcDrawOrderPattern() {
+		short[] result = Arrays.copyOf(_drawOrderPattern, _drawOrderPattern.length);
+		for (short item : result)
+			item = (short) (2 * i + item) % (2 * slices);
+		return result;
+		}
+
+	protected void calcDrawOrder(){
+		short [] drawOrder = new short[0];
+		for (int i = 0; i < slices; i++)
+			Arrays.
+	}
     }

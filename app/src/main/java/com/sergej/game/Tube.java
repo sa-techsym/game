@@ -17,6 +17,7 @@ package com.sergej.game;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import android.opengl.GLES20;
 
@@ -44,6 +45,18 @@ public class Tube extends CylinderElement {
 		_vertexBuffer = ByteBuffer.allocateDirect(2 * slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		_vertexBuffer.put(coords).position(0);
 
+		short [] drawOrder = new short [6 * slices];
+	//	drawOrder = Arrays.copyOf(_drawOrder, _drawOrder.length);
+		for(int i=0; i<slices;i++) {
+			drawOrder[6 * i + 0] = (short) ((2 * i + _drawOrder[0]) %(2*slices));
+			drawOrder[6 * i + 1] = (short) ((2 * i + _drawOrder[1]) %(2*slices));
+			drawOrder[6 * i + 2] = (short) ((2 * i + _drawOrder[2])%(2*slices));
+			drawOrder[6 * i + 3] = (short) ((2 * i + _drawOrder[3])%(2*slices));
+			drawOrder[6 * i + 4] = (short) ((2 * i + _drawOrder[4])%(2*slices));
+			drawOrder[6 * i + 5] = (short) ((2 * i + _drawOrder[5])%(2*slices));
+			}
+
+		_drawOrder = drawOrder;
 		_drawListBuffer = ByteBuffer.allocateDirect(_drawOrder.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
 		_drawListBuffer.put(_drawOrder).position(0);
 		}
