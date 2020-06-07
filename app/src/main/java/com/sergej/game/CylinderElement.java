@@ -133,6 +133,6 @@ public class CylinderElement {
 	protected void calcDrawOrder(){
 		short [] drawOrder = new short[0];
 		for (int i = 0; i < slices; i++)
-			Arrays.
+			///
 	}
     }
