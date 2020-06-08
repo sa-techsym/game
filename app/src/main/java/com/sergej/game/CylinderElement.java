@@ -16,9 +16,7 @@
 package com.sergej.game;
 
 import android.opengl.GLES20;
-
 import androidx.core.content.res.TypedArrayUtils;
-
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
@@ -52,7 +50,6 @@ public class CylinderElement {
     private final int _shaderProgram;
 
 	protected FloatBuffer _vertexBuffer;
-	protected ShortBuffer _drawListBuffer;
 
 	public CylinderElement() {
 		// create empty OpenGL Program
@@ -123,16 +120,20 @@ public class CylinderElement {
 			//12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
 	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
-	private short[] recalcDrawOrderPattern() {
-		short[] result = Arrays.copyOf(_drawOrderPattern, _drawOrderPattern.length);
+	private short [] increaseDrawOrderPattern(int ratio, int slices) {
+		short [] result = Arrays.copyOf(_drawOrderPattern, _drawOrderPattern.length);
 		for (short item : result)
-			item = (short) (2 * i + item) % (2 * slices);
+			item = (short) (2 * ratio + item) % (2 * slices);
 		return result;
 		}
 
-	protected void calcDrawOrder(){
-		short [] drawOrder = new short[0];
+	private ShortBuffer _drawListBuffer;
+
+	protected void calculateDrawOrder(int slices){
+		short [] draw_order = new short [_drawOrderPattern.length * slices];
 		for (int i = 0; i < slices; i++)
-			///
-	}
+			result[_drawOrderPattern.length * i] = Arrays.copyOf(increaseDrawOrderPattern(i, slices), _drawOrderPattern.length):
+		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+		_drawListBuffer.put(draw_oder).position(0);
+		}
     }
