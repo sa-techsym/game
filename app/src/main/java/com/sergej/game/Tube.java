@@ -25,18 +25,17 @@ import android.opengl.GLES20;
  * A three-dimensional tube as part of cylinder for use as a drawn object in OpenGL ES 2.0.
  */
 public class Tube extends CylinderElement {
-	//
 	public Tube(float start_angle, float end_angle, float radius, float height) {
 		int slices = (int) ((end_angle - start_angle) / DEGREES_PER_SLICE);
 
-		float [] coords = new float[2 * slices * COORDS_PER_VERTEX];
+		float[] coords = new float[2 * slices * COORDS_PER_VERTEX];
 
 		// initialize _coords array from base class as vertex byte buffer for shape coordinates
-		for (int i = 0;  i < slices; i++) {
+		for (int i = 0; i < slices; i++) {
 			int offset = 2 * COORDS_PER_VERTEX * i;
 			coords[offset + 0] = coords[offset + 3] = (float) Math.cos(start_angle + i * DEGREES_PER_SLICE);
 			coords[offset + 1] = coords[offset + 4] = (float) Math.sin(start_angle + i * DEGREES_PER_SLICE);
-			coords[offset + 2] =  height;
+			coords[offset + 2] = height;
 			coords[offset + 5] = -height;
 			}
 
@@ -45,19 +44,6 @@ public class Tube extends CylinderElement {
 		_vertexBuffer = ByteBuffer.allocateDirect(2 * slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		_vertexBuffer.put(coords).position(0);
 
-		short [] drawOrder = new short [6 * slices];
-	//	drawOrder = Arrays.copyOf(_drawOrder, _drawOrder.length);
-		for(int i=0; i<slices;i++) {
-			drawOrder[6 * i + 0] = (short) ((2 * i + _drawOrder[0]) %(2*slices));
-			drawOrder[6 * i + 1] = (short) ((2 * i + _drawOrder[1]) %(2*slices));
-			drawOrder[6 * i + 2] = (short) ((2 * i + _drawOrder[2])%(2*slices));
-			drawOrder[6 * i + 3] = (short) ((2 * i + _drawOrder[3])%(2*slices));
-			drawOrder[6 * i + 4] = (short) ((2 * i + _drawOrder[4])%(2*slices));
-			drawOrder[6 * i + 5] = (short) ((2 * i + _drawOrder[5])%(2*slices));
-			}
-
-		_drawOrder = drawOrder;
-		_drawListBuffer = ByteBuffer.allocateDirect(_drawOrder.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-		_drawListBuffer.put(_drawOrder).position(0);
+		calculateDrawOrder(slices);
 		}
 	}

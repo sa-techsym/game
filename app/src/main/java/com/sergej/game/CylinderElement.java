@@ -17,9 +17,13 @@ package com.sergej.game;
 
 import android.opengl.GLES20;
 import androidx.core.content.res.TypedArrayUtils;
+
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * A three-dimensional basis for cylinder elements for use as a drawn cylinder elements
@@ -67,6 +71,7 @@ public class CylinderElement {
 		}
 
 	private float [] color = { 1.0f, 0f, 0f, 1.0f };
+	private int _slices;
 
 	/**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
@@ -104,7 +109,7 @@ public class CylinderElement {
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _drawOrder.length, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _drawListBuffer. capacity() / 2, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(position_handle);
@@ -120,20 +125,23 @@ public class CylinderElement {
 			//12, 13, 15, 12, 15, 14,	14, 15,  1, 14,  1,  0
 	}; // { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
-	private short [] increaseDrawOrderPattern(int ratio, int slices) {
+	private short [] increaseDrawOrderPattern(int ratio) {
 		short [] result = Arrays.copyOf(_drawOrderPattern, _drawOrderPattern.length);
-		for (short item : result)
-			item = (short) (2 * ratio + item) % (2 * slices);
+		for (short item : result) {
+			item = (short) ((2 * ratio + item) % (2 * _slices));
+			int a = 0;
+		}
 		return result;
 		}
 
 	private ShortBuffer _drawListBuffer;
 
 	protected void calculateDrawOrder(int slices){
-		short [] draw_order = new short [_drawOrderPattern.length * slices];
+		_slices = slices;
+		short [] draw_order= new  short [_drawOrderPattern.length * slices];
 		for (int i = 0; i < slices; i++)
-			result[_drawOrderPattern.length * i] = Arrays.copyOf(increaseDrawOrderPattern(i, slices), _drawOrderPattern.length):
+			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
 		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-		_drawListBuffer.put(draw_oder).position(0);
+		_drawListBuffer.put(draw_order).position(0);
 		}
     }
