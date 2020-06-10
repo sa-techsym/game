@@ -71,7 +71,7 @@ public class CylinderElement {
 		}
 
 	private float [] color = { 1.0f, 0f, 0f, 1.0f };
-	private int _slices;
+	protected int _slices = 0;
 
 	/**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
@@ -92,7 +92,7 @@ public class CylinderElement {
 		// Prepare the triangle coordinate data
 		// 4 bytes per vertex
 		int _vertexStride = COORDS_PER_VERTEX * 4;
-		GLES20.glVertexAttribPointer(position_handle, COORDS_PER_VERTEX,GLES20.GL_FLOAT, false, _vertexStride, _vertexBuffer);
+		GLES20.glVertexAttribPointer(position_handle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, _vertexStride, _vertexBuffer);
         
 		// get handle to fragment shader's vColor member
 		int _colorHandle = GLES20.glGetUniformLocation(_shaderProgram, "vColor");
@@ -109,7 +109,7 @@ public class CylinderElement {
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _drawListBuffer. capacity() / 2, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _slices * _drawOrderPattern.length, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(position_handle);
@@ -127,21 +127,23 @@ public class CylinderElement {
 
 	private short [] increaseDrawOrderPattern(int ratio) {
 		short [] result = Arrays.copyOf(_drawOrderPattern, _drawOrderPattern.length);
-		for (short item : result) {
-			item = (short) ((2 * ratio + item) % (2 * _slices));
-			int a = 0;
-		}
+		for (int i  = 0; i < _drawOrderPattern.length; i++)
+             result[i] = (short) ((2 * ratio + result[i]) % (2 * _slices));
 		return result;
 		}
 
 	private ShortBuffer _drawListBuffer;
 
-	protected void calculateDrawOrder(int slices){
-		_slices = slices;
-		short [] draw_order= new  short [_drawOrderPattern.length * slices];
-		for (int i = 0; i < slices; i++)
+	protected void initializeDrawListBuffer(float start_angle, float end_angle) {
+		short [] draw_order = new  short [_slices * _drawOrderPattern.length];
+		for (int i = 0; i < _slices; i++)
 			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
 		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
 		_drawListBuffer.put(draw_order).position(0);
+		}
+
+	protected void initializeVertexBuffer(float [] coords) {
+		_vertexBuffer = ByteBuffer.allocateDirect(2 * _slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		_vertexBuffer.put(coords).position(0);
 		}
     }

@@ -26,12 +26,14 @@ import android.opengl.GLES20;
  */
 public class Tube extends CylinderElement {
 	public Tube(float start_angle, float end_angle, float radius, float height) {
-		int slices = (int) ((end_angle - start_angle) / DEGREES_PER_SLICE);
+		_slices = (int) ((end_angle - start_angle) / DEGREES_PER_SLICE);
 
-		float[] coords = new float[2 * slices * COORDS_PER_VERTEX];
+		// initialize draw indices buffer, which in shaders and in draw method is used
+		initializeDrawListBuffer(start_angle, end_angle);
 
-		// initialize _coords array from base class as vertex byte buffer for shape coordinates
-		for (int i = 0; i < slices; i++) {
+		// calculate coordinates array for shape coordinates
+		float[] coords = new float[2 * _slices * COORDS_PER_VERTEX];
+		for (int i = 0; i < _slices; i++) {
 			int offset = 2 * COORDS_PER_VERTEX * i;
 			coords[offset + 0] = coords[offset + 3] = (float) Math.cos(start_angle + i * DEGREES_PER_SLICE);
 			coords[offset + 1] = coords[offset + 4] = (float) Math.sin(start_angle + i * DEGREES_PER_SLICE);
@@ -39,11 +41,9 @@ public class Tube extends CylinderElement {
 			coords[offset + 5] = -height;
 			}
 
-		// initialize buffers for vertices and indices, which in shaders and
-		// in draw method are used
-		_vertexBuffer = ByteBuffer.allocateDirect(2 * slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		// initialize vertex buffer similar  to draw indices, which also in shaders and in draw method is used
+		_vertexBuffer = ByteBuffer.allocateDirect(2 * _slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		_vertexBuffer.put(coords).position(0);
-
-		calculateDrawOrder(slices);
+		// this is an alternative to the top two lines initializeVertexBuffer(coords);
 		}
 	}
