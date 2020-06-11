@@ -50,10 +50,8 @@ public class CylinderElement {
 					"}";
 
 	// number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3, MAX_SLICES = 8;
+    static final int _COORDS_PER_VERTEX = 3, _MAX_SLICES = 8;
     private final int _shaderProgram;
-
-	protected FloatBuffer _vertexBuffer;
 
 	public CylinderElement() {
 		// create empty OpenGL Program
@@ -71,7 +69,9 @@ public class CylinderElement {
 		}
 
 	private float [] color = { 1.0f, 0f, 0f, 1.0f };
+
 	protected int _slices = 0;
+	protected FloatBuffer _vertexBuffer;
 
 	/**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
@@ -115,7 +115,7 @@ public class CylinderElement {
         GLES20.glDisableVertexAttribArray(position_handle);
     	}
 
-    protected final float DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
+    protected final float _DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
 
 	protected final short [] _drawOrderPattern = {
 			0,  1,  3,  0,  3,  2 //,
@@ -134,7 +134,7 @@ public class CylinderElement {
 
 	private ShortBuffer _drawListBuffer;
 
-	protected void initializeDrawListBuffer(float start_angle, float end_angle) {
+	protected void initializeDrawListBuffer() {
 		short [] draw_order = new  short [_slices * _drawOrderPattern.length];
 		for (int i = 0; i < _slices; i++)
 			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
