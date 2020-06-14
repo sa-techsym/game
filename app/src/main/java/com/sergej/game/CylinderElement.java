@@ -16,14 +16,12 @@
 package com.sergej.game;
 
 import android.opengl.GLES20;
-import androidx.core.content.res.TypedArrayUtils;
 
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * A three-dimensional basis for cylinder elements for use as a drawn cylinder elements
@@ -49,11 +47,13 @@ public class CylinderElement {
 					"  gl_FragColor = vColor;" +
 					"}";
 
-	// number of coordinates per vertex in this array
-    static final int _COORDS_PER_VERTEX = 3, _MAX_SLICES = 8;
-    private final int _shaderProgram;
+	private final int _shaderProgram;
 
-	public CylinderElement() {
+	protected FloatBuffer _vertexBuffer;
+
+	static private final int _COORDS_PER_VERTEX = 3;
+
+	public CylinderElement(int slices) {
 		// create empty OpenGL Program
 		_shaderProgram = GLES20.glCreateProgram();
 
@@ -66,12 +66,19 @@ public class CylinderElement {
 
 		// create OpenGL shader program executables
 		GLES20.glLinkProgram(_shaderProgram);
+
+		short [] draw_order = new  short [(_slices = slices) * _drawOrderPattern.length];
+
+		for (int i = 0; i < _slices; i++)
+			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
+
+		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+		_drawListBuffer.put(draw_order).position(0);
 		}
 
 	private float [] color = { 1.0f, 0f, 0f, 1.0f };
 
-	protected int _slices = 0;
-	protected FloatBuffer _vertexBuffer;
+	private int _slices;
 
 	/**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
@@ -91,8 +98,8 @@ public class CylinderElement {
         
 		// Prepare the triangle coordinate data
 		// 4 bytes per vertex
-		int _vertexStride = COORDS_PER_VERTEX * 4;
-		GLES20.glVertexAttribPointer(position_handle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, _vertexStride, _vertexBuffer);
+		int _vertexStride = _COORDS_PER_VERTEX * 4;
+		GLES20.glVertexAttribPointer(position_handle, _COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, _vertexStride, _vertexBuffer);
         
 		// get handle to fragment shader's vColor member
 		int _colorHandle = GLES20.glGetUniformLocation(_shaderProgram, "vColor");
@@ -115,7 +122,9 @@ public class CylinderElement {
         GLES20.glDisableVertexAttribArray(position_handle);
     	}
 
-    protected final float _DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
+	//private float _start_angle = 0, _end_angle = (float) (2 * Math.PI);
+
+    //protected final float _DEGREES_PER_SLICE = 2 * (float) Math.PI / MAX_SLICES;
 
 	protected final short [] _drawOrderPattern = {
 			0,  1,  3,  0,  3,  2 //,
@@ -133,17 +142,13 @@ public class CylinderElement {
 		}
 
 	private ShortBuffer _drawListBuffer;
+	
+	public void initializeVertexBuffer(CylinderElementsBuildRule rule) {
+		// applying a rule that calculates the coordinates of the vertices of a figure
+		float [] coords = rule.apply();
 
-	protected void initializeDrawListBuffer() {
-		short [] draw_order = new  short [_slices * _drawOrderPattern.length];
-		for (int i = 0; i < _slices; i++)
-			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
-		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-		_drawListBuffer.put(draw_order).position(0);
-		}
-
-	protected void initializeVertexBuffer(float [] coords) {
-		_vertexBuffer = ByteBuffer.allocateDirect(2 * _slices * COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		// placement of the calculated coordinates in the buffer, which is used later in the shaders to draw a figure
+		_vertexBuffer = ByteBuffer.allocateDirect(2 * _slices * _COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		_vertexBuffer.put(coords).position(0);
 		}
     }

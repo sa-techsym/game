@@ -55,7 +55,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         //mTriangle = new Triangle();
-        mSquare   = new Cylinder();
+        mSquare   = new Cylinder(0.9f, 0.7f, 1f);// , (float) (2*Math.PI));
     }
 
     @Override public void onDrawFrame(GL10 unused) {
