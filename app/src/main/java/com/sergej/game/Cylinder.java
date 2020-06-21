@@ -5,66 +5,58 @@ import android.text.BoringLayout;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-@FunctionalInterface
-interface CylinderElementsBuildRule {
-	static int _COORDS_PER_VERTEX = 3, _MAX_SLICES = 8;
-	abstract public float [] apply();
-	}
+public class OpenGLPipe {
+	// 	By this class we describe a pipe, so the variables that are declared in it should apply
+	// 	only to the pipe. Information about how this pipe is cut is beyond the scope
+	// 	of this set of variables.
+	static private float _ANGLE_FROM = 0f, _ANGLE_TO  = 3 * (float) Math.PI / 2;
 
-class TubeBuildRule implements CylinderElementsBuildRule {
-	private float _radius, _angle_from;
-	private int _direction;
+	static private int _MAX_SLICES = 8;
 
-	public void parameters(float radius, float angle_from, int direction) {
-		_radius = radius;
-		_angle_from = angle_from;
-		_direction = direction;
-	}
+	private float _inner_radius, _outer_radius, _height;
 
-	@Override public float [] apply() {
-		// calculate coordinates array for shape coordinates
-		float [] coords = new float[2 * Cylinder._slices * _COORDS_PER_VERTEX];
-
-		for (int i = 0; i < Cylinder._slices; i++) {
-			int offset = 2 * _COORDS_PER_VERTEX * i;
-			coords[offset + 0] = coords[offset + 3] = _radius * (float) Math.cos(_angle_from + _direction * i * 2 * (float)Math.PI / _MAX_SLICES);
-			coords[offset + 1] = coords[offset + 4] = _radius * (float) Math.sin(_angle_from + _direction * i * 2 * (float)Math.PI / _MAX_SLICES);
-			coords[offset + 2] = Cylinder._height;
-			coords[offset + 5] =-Cylinder._height;
-			}
-
-		return coords;
+	private interface VertexInitializationRule {
+		abstract public float [] apply();
 		}
-	}
 
-public class Cylinder {
-	static private final int _MAX_SLICES = 8;
-	static private final float _DEGREES_PER_SLICE = 2 * (float) Math.PI / _MAX_SLICES;
-	private static final int _COORDS_PER_VERTEX = 3;
+	static private int _SLICES = (_ANGLE_TO - _ANGLE_FROM) / (/*degrees per one slice*/ 2 * Math.PI / _MAX_SLICES), _COORDS_PER_VERTEX = 3;
 
-	private CylinderElement[] _elements;
+	class TubeVerticesRule implements VertexInitializationRule {
+		private float _radius; TubeVerticesRule(float radius) { _radius = radius; }
 
-	private float _innerRadius = 0.7f, _outerRadius = 0.9f, _angleFrom = 0;
+		@Override public float [] apply() {
+			// calculate coordinates array for shape coordinates
+			float [] coords = new float[2 * _SLICES * _COORDS_PER_VERTEX];
 
-	static public float _height = 1.0f;
+			// calculating theta step for every slice
+			float theta = (_ANGLE_TO - _ANGLE_FROM) / _MAX_SLICES;
 
-	static public int _slices = 5;
+			for (int i = 0; i < _SLICES; i++) {
+				int offset = 2 * _COORDS_PER_VERTEX * i;
+				coords[offset + 0] = coords[offset + 3] = _radius * (float) Math.cos(_ANGLE_FROM + i * theta);
+				coords[offset + 1] = coords[offset + 4] = _radius * (float) Math.sin(_ANGLE_FROM + i * theta);
+				coords[offset + 2] = _height;
+				coords[offset + 5] =-_height;
+				}
 
-	public Cylinder(float inner_radius, float outer_radius, float height) {
-		//int slices = (int) (end_angle - start_angle) / _MAX_SLICES;
+			return coords;
+			}
+		}
 
-		TubeBuildRule tube_rule = new TubeBuildRule();
+	private OpenGLPipeElement[] _elements = new OpenGLPipeElement[2];
 
-		tube_rule.parameters(outer_radius,_angleFrom, 1);
-		_elements[0] = new CylinderElement(_slices);
-		_elements[0].initializeVertexBuffer(tube_rule);
+	public Pipe(float inner_radius, float outer_radius, float height) {
 
-		tube_rule.parameters(inner_radius, _angleFrom  +_slices * _DEGREES_PER_SLICE, -1);
-		(_elements[0] = new CylinderElement(_slices)).initializeVertexBuffer(tube_rule);
-	}
+		VertexInitializationRule [] rules = {
+				TubeVerticesRule.withParamater   .of("a", _height, "b", iiner_radius), Map.of("a", _height, "b", iiner_radius) };
+
+		int i = 0;
+		for (VertexInitializationRule rule : rules)
+		 	_elements[i++] = new OpenGLPipeElement().initializeVertexBuffer(rule.apply());
+		}
 
 	public void draw(float [] mvpMatrix) {
-		for (CylinderElement item : _elements)
+		for (OpenGLPipeElement item : _elements)
 			item.draw(mvpMatrix);
 		}
 	}

@@ -27,7 +27,7 @@ import java.util.Arrays;
  * A three-dimensional basis for cylinder elements for use as a drawn cylinder elements
  * 		as objects in OpenGL ES 2.0.
  */
-public class CylinderElement {
+public class OpenGLPipeElement {
 	private final String vertexShaderCode =
 			// This matrix member variable provides a hook to manipulate
 			// the coordinates of the objects that use this vertex shader
@@ -53,7 +53,7 @@ public class CylinderElement {
 
 	static private final int _COORDS_PER_VERTEX = 3;
 
-	public CylinderElement(int slices) {
+	public OpenGLPipeElement() {
 		// create empty OpenGL Program
 		_shaderProgram = GLES20.glCreateProgram();
 
@@ -66,14 +66,6 @@ public class CylinderElement {
 
 		// create OpenGL shader program executables
 		GLES20.glLinkProgram(_shaderProgram);
-
-		short [] draw_order = new  short [(_slices = slices) * _drawOrderPattern.length];
-
-		for (int i = 0; i < _slices; i++)
-			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
-
-		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-		_drawListBuffer.put(draw_order).position(0);
 		}
 
 	private float [] color = { 1.0f, 0f, 0f, 1.0f };
@@ -116,7 +108,7 @@ public class CylinderElement {
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _slices * _drawOrderPattern.length, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, _drawListBuffer.capacity() / 2, GLES20.GL_UNSIGNED_SHORT, _drawListBuffer);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(position_handle);
@@ -143,12 +135,19 @@ public class CylinderElement {
 
 	private ShortBuffer _drawListBuffer;
 	
-	public void initializeVertexBuffer(CylinderElementsBuildRule rule) {
-		// applying a rule that calculates the coordinates of the vertices of a figure
-		float [] coords = rule.apply();
-
+	public OpenGLPipeElement initializeVertexBuffer(float [] coords) {
 		// placement of the calculated coordinates in the buffer, which is used later in the shaders to draw a figure
 		_vertexBuffer = ByteBuffer.allocateDirect(2 * _slices * _COORDS_PER_VERTEX * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		_vertexBuffer.put(coords).position(0);
+
+		short [] draw_order = new  short [coords.length / _COORDS_PER_VERTEX];
+
+		for (int i = 0; i < _slices; i++)
+			System.arraycopy(increaseDrawOrderPattern(i), 0, draw_order, _drawOrderPattern.length * i, _drawOrderPattern.length);
+
+		_drawListBuffer = ByteBuffer.allocateDirect(draw_order.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+		_drawListBuffer.put(draw_order).position(0);
+
+		return this;
 		}
     }
